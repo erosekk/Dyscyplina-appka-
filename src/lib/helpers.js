@@ -1,6 +1,12 @@
 import { CONFIG } from '@/config'
 
-export const todayStr = () => new Date().toISOString().slice(0, 10)
+export const todayStr = () => {
+  const d = new Date()
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
 
 export const getDayStatus = (pct) => {
   if (pct >= CONFIG.dayStatusThresholds.win)     return 'win'
@@ -24,23 +30,34 @@ export const calcScore = (data) => {
 }
 
 export const getWeekStart = (dateStr) => {
-  const d = new Date(dateStr + 'T12:00:00')
-  const dow = d.getDay()
-  d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1))
-  return d.toISOString().slice(0, 10)
+  const [y, m, d] = dateStr.split('-').map(Number)
+  const date = new Date(y, m - 1, d)
+  const dow = date.getDay()
+  date.setDate(date.getDate() - (dow === 0 ? 6 : dow - 1))
+  const yr = date.getFullYear()
+  const mo = String(date.getMonth() + 1).padStart(2, '0')
+  const dy = String(date.getDate()).padStart(2, '0')
+  return `${yr}-${mo}-${dy}`
 }
 
 export const getMonthDays = (year, month) => {
   const days = []
-  const d = new Date(year, month, 1)
-  const dow = d.getDay()
+  const first = new Date(year, month, 1)
+  const dow = first.getDay()
   for (let i = 0; i < (dow === 0 ? 6 : dow - 1); i++) days.push(null)
-  while (d.getMonth() === month) { days.push(new Date(d)); d.setDate(d.getDate() + 1) }
+  const d = new Date(year, month, 1)
+  while (d.getMonth() === month) {
+    const y = d.getFullYear()
+    const mo = String(d.getMonth() + 1).padStart(2, '0')
+    const dy = String(d.getDate()).padStart(2, '0')
+    days.push(`${y}-${mo}-${dy}`)
+    d.setDate(d.getDate() + 1)
+  }
   return days
 }
 
 export const MONTH_NAMES = [
-  'Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec',
-  'Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'
+  'Styczen','Luty','Marzec','Kwiecien','Maj','Czerwiec',
+  'Lipiec','Sierpien','Wrzesien','Pazdziernik','Listopad','Grudzien'
 ]
-export const DAY_LABELS = ['Pn','Wt','Śr','Cz','Pt','Sb','Nd']
+export const DAY_LABELS = ['Pn','Wt','Sr','Cz','Pt','Sb','Nd']
