@@ -37,15 +37,16 @@ export default function CalendarView({ allDays, onSelectDay }) {
 
         {/* Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 3 }}>
-          {days.map((d, i) => {
-            if (!d) return <div key={`e${i}`} />
-            const key = d.toISOString().slice(0, 10)
+          {days.map((key, i) => {
+            if (!key) return <div key={`e${i}`} />
             const data = allDays[key]
             const score = calcScore(data)
             const pct = data ? (score / CONFIG.maxDailyScore) * 100 : null
             const status = pct !== null ? getDayStatus(pct) : null
             const col = status ? getDayColor(status) : null
-            const isT = key === todayStr(), isFuture = key > todayStr(), isSel = key === sel
+            const today = todayStr()
+            const dayNum = Number(key.split('-')[2])
+            const isT = key === today, isFuture = key > today, isSel = key === sel
             return (
               <div key={key} onClick={() => setSel(isSel ? null : key)} style={{
                 aspectRatio: '1', borderRadius: 8, cursor: 'pointer', transition: 'all 0.15s',
@@ -53,7 +54,7 @@ export default function CalendarView({ allDays, onSelectDay }) {
                 border: `1.5px solid ${isSel ? '#60a5fa' : isT ? 'rgba(96,165,250,0.45)' : col ? col + '45' : 'rgba(255,255,255,0.06)'}`,
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               }}>
-                <div style={{ fontSize: 11, fontWeight: isT ? 700 : 500, color: isT ? '#60a5fa' : isFuture ? '#1e293b' : '#64748b' }}>{d.getDate()}</div>
+                <div style={{ fontSize: 11, fontWeight: isT ? 700 : 500, color: isT ? '#60a5fa' : isFuture ? '#1e293b' : '#64748b' }}>{dayNum}</div>
                 {col && !isFuture && <div style={{ width: 3, height: 3, borderRadius: '50%', background: col, marginTop: 1 }} />}
               </div>
             )
