@@ -74,6 +74,7 @@ export default function DayView({ dayData, setDayData, selectedDate, setSelected
   const minimumDone = CONFIG.tasks.filter(t => t.isMinimum).every(t => dayData.completedTasks?.[t.id])
   const t = todayStr(), isToday = selectedDate === t
   const dateLabel = new Date(selectedDate + 'T12:00:00').toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'long' })
+  const missingTrainings = Math.max(CONFIG.weeklyTrainingGoal - weeklyCount, 0)
 
   const toggle = id => setDayData(p => ({ ...p, completedTasks: { ...p.completedTasks, [id]: !p.completedTasks?.[id] } }))
   const toggleTrain = id => setDayData(p => {
@@ -158,7 +159,9 @@ export default function DayView({ dayData, setDayData, selectedDate, setSelected
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
           <div>
             <SectionLabel>Treningi tygodnia</SectionLabel>
-            <div style={{ fontSize: 12, color: '#475569', marginTop: -4 }}>{weeklyCount} / {CONFIG.weeklyTrainingGoal} sesji</div>
+            <div style={{ fontSize: 12, color: '#475569', marginTop: -4 }}>
+              {weeklyCount >= CONFIG.weeklyTrainingGoal ? 'Cel tygodnia zrobiony' : `Brakuje ${missingTrainings} do celu`}
+            </div>
           </div>
           <div style={{ fontSize: 22, fontWeight: 700, color: weeklyCount >= CONFIG.weeklyTrainingGoal ? '#4ade80' : '#60a5fa' }}>{weeklyCount}/{CONFIG.weeklyTrainingGoal}</div>
         </div>

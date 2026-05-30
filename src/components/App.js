@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { CONFIG } from '@/config'
-import { todayStr, getWeekStart, getDayColor, getDayStatus, calcScore } from '@/lib/helpers'
+import { todayStr, getDayColor, getDayStatus, calcScore, getWeekTrainingCount } from '@/lib/helpers'
 import { getAllDays, saveDay, initDayData } from '@/lib/storage'
 import { Ic } from '@/components/ui'
 import DayView from '@/components/views/DayView'
@@ -20,12 +20,7 @@ function Sidebar({ active, setActive, allDays }) {
   const pct = (score / CONFIG.maxDailyScore) * 100
   const status = getDayStatus(pct)
   const col = getDayColor(status)
-  const ws = getWeekStart(t)
-  let wCount = 0
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(ws + 'T12:00:00'); d.setDate(d.getDate() + i)
-    wCount += allDays[d.toISOString().slice(0, 10)]?.trainings?.length || 0
-  }
+  const wCount = getWeekTrainingCount(allDays, t)
   const r = 18, circ = 2 * Math.PI * r
 
   return (
@@ -109,12 +104,7 @@ export default function App() {
     })
   }, [selectedDate])
 
-  const ws = getWeekStart(selectedDate)
-  let weeklyCount = 0
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(ws + 'T12:00:00'); d.setDate(d.getDate() + i)
-    weeklyCount += allDays[d.toISOString().slice(0, 10)]?.trainings?.length || 0
-  }
+  const weeklyCount = getWeekTrainingCount(allDays, selectedDate)
 
   const handleSelectDay = key => { setSelectedDate(key); setActiveTab('dashboard') }
 

@@ -53,6 +53,9 @@ export const getWeekKeys = (dateStr) => {
   return Array.from({ length: 7 }, (_, i) => addDays(start, i))
 }
 
+export const getWeekTrainingCount = (allDays, dateStr) =>
+  getWeekKeys(dateStr).reduce((total, key) => total + (allDays[key]?.trainings?.length || 0), 0)
+
 export const getMonthKeys = (year, month) =>
   getMonthDays(year, month).filter(Boolean)
 
