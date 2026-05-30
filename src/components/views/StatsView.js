@@ -1,14 +1,14 @@
 'use client'
 import { useState } from 'react'
 import { CONFIG } from '@/config'
-import { calcScore, getDayColor, getDayStatus, todayStr } from '@/lib/helpers'
+import { calcScore, getDayColor, getDayStatus, hasDayActivity, addDays, todayStr } from '@/lib/helpers'
 import { getWeightLog, saveWeightEntry, getNextWeighDate } from '@/lib/storage'
 import { Card, SectionLabel } from '@/components/ui'
 
 const WeekChart = ({ allDays }) => {
   const days = Array.from({ length: 30 }, (_, i) => {
-    const d = new Date(); d.setDate(d.getDate() - (29 - i))
-    return calcScore(allDays[d.toISOString().slice(0, 10)])
+    const key = addDays(todayStr(), -(29 - i))
+    return calcScore(allDays[key])
   })
   const max = Math.max(...days, 1)
   const pts = days.map((s, i) => `${(i / 29) * 100},${40 - (s / max) * 40}`).join(' ')
@@ -40,11 +40,15 @@ const Records = ({ allDays }) => {
   const keys = Object.keys(allDays).sort()
   let bestScore = 0, bestDay = null, maxStreak = 0, cur = 0, streak = 0
   keys.forEach(k => { const s = calcScore(allDays[k]); if (s > bestScore) { bestScore = s; bestDay = k } })
-  keys.forEach(k => { const p = (calcScore(allDays[k]) / CONFIG.maxDailyScore) * 100; if (p >= CONFIG.dayStatusThresholds.average) { cur++; if (cur > maxStreak) maxStreak = cur } else cur = 0 })
+  if (keys.length) {
+    for (let k = keys[0]; k <= keys[keys.length - 1]; k = addDays(k, 1)) {
+      if (hasDayActivity(allDays[k])) { cur++; if (cur > maxStreak) maxStreak = cur }
+      else cur = 0
+    }
+  }
   for (let i = 0; i <= 60; i++) {
-    const d = new Date(todayStr() + 'T12:00:00'); d.setDate(d.getDate() - i)
-    const k = d.toISOString().slice(0, 10)
-    if ((calcScore(allDays[k]) / CONFIG.maxDailyScore) * 100 >= CONFIG.dayStatusThresholds.average) streak++
+    const k = addDays(todayStr(), -i)
+    if (hasDayActivity(allDays[k])) streak++
     else break
   }
   const bestLbl = bestDay ? new Date(bestDay + 'T12:00:00').toLocaleDateString('pl-PL', { day: 'numeric', month: 'short' }) : '—'
@@ -144,8 +148,8 @@ export default function StatsView({ allDays }) {
   const now = new Date()
   const prefix = now.toISOString().slice(0, 7)
   const keys = Object.keys(allDays).filter(k => k.startsWith(prefix))
-  const logged = keys.filter(k => allDays[k]).length
-  const goodDays = keys.filter(k => { const s = calcScore(allDays[k]); return s > 0 && (s / CONFIG.maxDailyScore * 100) >= CONFIG.dayStatusThresholds.average }).length
+  const logged = keys.filter(k => hasDayActivity(allDays[k])).length
+  const goodDays = keys.filter(k => { const s = calcScore(allDays[k]); return s > 0 && (s / CONFIG.maxDailyScore * 100) >= CONFIG.dayStatusThresholds.good }).length
   const avgScore = logged > 0 ? Math.round(keys.reduce((a, k) => a + calcScore(allDays[k]), 0) / logged) : 0
   const taskStats = CONFIG.tasks.map(t => {
     const done = keys.filter(k => allDays[k]?.completedTasks?.[t.id]).length

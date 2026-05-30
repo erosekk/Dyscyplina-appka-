@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { CONFIG } from '@/config'
-import { calcScore, getDayColor, getDayStatus, getMonthDays, todayStr, MONTH_NAMES, DAY_LABELS } from '@/lib/helpers'
+import { calcScore, getDayColor, getDayStatus, getMonthDays, getWeekKeys, getMonthKeys, sumScores, hasDayActivity, todayStr, MONTH_NAMES, DAY_LABELS } from '@/lib/helpers'
 import { Card, Ic } from '@/components/ui'
 
 export default function CalendarView({ allDays, onSelectDay }) {
@@ -13,6 +13,12 @@ export default function CalendarView({ allDays, onSelectDay }) {
   const selScore = calcScore(selData)
   const selPct = (selScore / CONFIG.maxDailyScore) * 100
   const selStatus = selData ? getDayStatus(selPct) : null
+  const summaryDate = sel || todayStr()
+  const weekKeys = getWeekKeys(summaryDate)
+  const monthKeys = getMonthKeys(year, month)
+  const weekScore = sumScores(allDays, weekKeys)
+  const monthScore = sumScores(allDays, monthKeys)
+  const monthActiveDays = monthKeys.filter(key => hasDayActivity(allDays[key])).length
 
   return (
     <div style={{ paddingTop: 20, paddingBottom: 20 }}>
@@ -44,6 +50,7 @@ export default function CalendarView({ allDays, onSelectDay }) {
             const pct = data ? (score / CONFIG.maxDailyScore) * 100 : null
             const status = pct !== null ? getDayStatus(pct) : null
             const col = status ? getDayColor(status) : null
+            const active = hasDayActivity(data)
             const today = todayStr()
             const dayNum = Number(key.split('-')[2])
             const isT = key === today, isFuture = key > today, isSel = key === sel
@@ -52,15 +59,29 @@ export default function CalendarView({ allDays, onSelectDay }) {
                 aspectRatio: '1', borderRadius: 8, cursor: 'pointer', transition: 'all 0.15s',
                 background: isSel ? 'rgba(96,165,250,0.18)' : col ? col + '20' : 'rgba(255,255,255,0.025)',
                 border: `1.5px solid ${isSel ? '#60a5fa' : isT ? 'rgba(96,165,250,0.45)' : col ? col + '45' : 'rgba(255,255,255,0.06)'}`,
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1,
               }}>
                 <div style={{ fontSize: 11, fontWeight: isT ? 700 : 500, color: isT ? '#60a5fa' : isFuture ? '#1e293b' : '#64748b' }}>{dayNum}</div>
-                {col && !isFuture && <div style={{ width: 3, height: 3, borderRadius: '50%', background: col, marginTop: 1 }} />}
+                {active && !isFuture && <div style={{ fontSize: 9, fontWeight: 800, lineHeight: 1, color: col }}>{score}</div>}
               </div>
             )
           })}
         </div>
       </Card>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginBottom: 10 }}>
+        {[
+          { label: 'Tydzien', value: weekScore, unit: 'pkt', color: '#60a5fa' },
+          { label: 'Miesiac', value: monthScore, unit: 'pkt', color: '#4ade80' },
+          { label: 'Aktywne', value: monthActiveDays, unit: 'dni', color: '#fbbf24' },
+        ].map(item => (
+          <Card key={item.label} style={{ padding: '12px 8px', textAlign: 'center' }}>
+            <div style={{ fontSize: 20, fontWeight: 800, color: item.color, lineHeight: 1 }}>{item.value}</div>
+            <div style={{ fontSize: 9, color: '#334155', marginTop: 2 }}>{item.unit}</div>
+            <div style={{ fontSize: 10, color: '#64748b', marginTop: 4 }}>{item.label}</div>
+          </Card>
+        ))}
+      </div>
 
       {/* Detail */}
       {!sel && <Card style={{ color: '#334155', fontSize: 13, textAlign: 'center', padding: '28px 16px' }}>Kliknij dzien, aby zobaczyc szczegoly</Card>}
@@ -82,8 +103,6 @@ export default function CalendarView({ allDays, onSelectDay }) {
 
             <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
               {wm && <span style={{ padding: '3px 10px', borderRadius: 6, fontSize: 11, background: wm.color + '12', color: wm.color, border: `1px solid ${wm.color}33` }}>{wm.label}</span>}
-              {selData.energy != null && <span style={{ padding: '3px 10px', borderRadius: 6, fontSize: 11, background: 'rgba(96,165,250,0.1)', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.2)' }}>⚡ {selData.energy}/10</span>}
-              {selData.mood != null && <span style={{ padding: '3px 10px', borderRadius: 6, fontSize: 11, background: 'rgba(192,132,252,0.1)', color: '#c084fc', border: '1px solid rgba(192,132,252,0.2)' }}>🌊 {selData.mood}/10</span>}
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 12 }}>

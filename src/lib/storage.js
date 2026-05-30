@@ -7,7 +7,7 @@ const KEY = 'dyscyplina_v1'
 const WEIGHT_KEY = 'dyscyplina_weight_v1'
 
 // Day data shape:
-// { workMode, completedTasks: {}, trainings: [], mood, energy, note, skipReason }
+// { workMode, completedTasks: {}, trainings: [], note, skipReason }
 
 export function getAllDays() {
   try { return JSON.parse(localStorage.getItem(KEY)) || {} } catch { return {} }
@@ -29,7 +29,7 @@ export function saveDay(date, data) {
 }
 
 export function initDayData() {
-  return { workMode: 'free', completedTasks: {}, trainings: [], mood: null, energy: null, note: '', skipReason: '' }
+  return { workMode: 'free', completedTasks: {}, trainings: [], note: '', skipReason: '' }
 }
 
 // Weight log

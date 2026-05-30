@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { CONFIG } from '@/config'
-import { calcScore, getDayColor, getDayStatus, todayStr, getWeekStart, DAY_LABELS } from '@/lib/helpers'
+import { calcScore, getDayColor, getDayStatus, todayStr, getWeekKeys, DAY_LABELS } from '@/lib/helpers'
 import { Card, SectionLabel, Ic, ScoreRing } from '@/components/ui'
 
 const TaskRow = ({ task, done, onToggle, optional }) => (
@@ -29,31 +29,15 @@ const TaskRow = ({ task, done, onToggle, optional }) => (
   </div>
 )
 
-const MoodBar = ({ label, emoji, value, onChange, color }) => (
-  <div style={{ flex: 1 }}>
-    <div style={{ fontSize: 11, color: '#64748b', marginBottom: 6 }}>{emoji} {label}</div>
-    <div style={{ display: 'flex', gap: 3 }}>
-      {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
-        <div key={n} onClick={() => onChange(n === value ? null : n)} style={{
-          flex: 1, height: 26, borderRadius: 4, cursor: 'pointer',
-          background: value >= n ? color : 'rgba(255,255,255,0.05)', transition: 'background 0.12s',
-        }} />
-      ))}
-    </div>
-    <div style={{ textAlign: 'right', fontSize: 10, color: '#475569', marginTop: 3 }}>{value ? `${value}/10` : '—'}</div>
-  </div>
-)
-
 const WeekMini = ({ allDays, selectedDate, onDayClick }) => {
-  const ws = getWeekStart(selectedDate)
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(ws + 'T12:00:00'); d.setDate(d.getDate() + i)
-    const key = d.toISOString().slice(0, 10)
-    return { key, data: allDays[key] }
-  })
+  const days = getWeekKeys(selectedDate).map(key => ({ key, data: allDays[key] }))
+  const weeklyScore = days.reduce((total, day) => total + calcScore(day.data), 0)
   return (
     <Card>
-      <SectionLabel>Postep tygodnia</SectionLabel>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+        <SectionLabel>Postep tygodnia</SectionLabel>
+        <div style={{ fontSize: 12, fontWeight: 700, color: '#60a5fa' }}>{weeklyScore} pkt</div>
+      </div>
       <div style={{ display: 'flex', gap: 5 }}>
         {days.map(({ key, data }, i) => {
           const score = calcScore(data), pct = (score / CONFIG.maxDailyScore) * 100
@@ -67,9 +51,9 @@ const WeekMini = ({ allDays, selectedDate, onDayClick }) => {
                 width: '100%', aspectRatio: '1', borderRadius: 8,
                 background: col ? col + '28' : 'rgba(255,255,255,0.025)',
                 border: `1.5px solid ${isSel ? '#60a5fa' : isT ? 'rgba(96,165,250,0.35)' : col ? col + '50' : 'rgba(255,255,255,0.06)'}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 1,
               }}>
-                {status && !isFuture && <span style={{ fontSize: 8, fontWeight: 700, color: col }}>{Math.round(pct)}%</span>}
+                {score > 0 && !isFuture && <span style={{ fontSize: 10, fontWeight: 800, color: col }}>{score}</span>}
                 {isT && !data && <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#60a5fa' }} />}
               </div>
             </div>
@@ -201,15 +185,6 @@ export default function DayView({ dayData, setDayData, selectedDate, setSelected
         </div>
       </Card>
 
-      {/* Mood + Energy */}
-      <Card>
-        <SectionLabel>Energia i nastoj</SectionLabel>
-        <div style={{ display: 'flex', gap: 16 }}>
-          <MoodBar label="Energia" emoji="⚡" value={dayData.energy} onChange={v => setDayData(p => ({ ...p, energy: v }))} color="#60a5fa" />
-          <MoodBar label="Nastoj"  emoji="🌊" value={dayData.mood}   onChange={v => setDayData(p => ({ ...p, mood: v }))}   color="#c084fc" />
-        </div>
-      </Card>
-
       {/* Note */}
       <Card>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -228,7 +203,7 @@ export default function DayView({ dayData, setDayData, selectedDate, setSelected
       </Card>
 
       {/* Skip reason */}
-      {status === 'chaotic' && (
+      {status === 'weak' && (
         <Card style={{ borderColor: 'rgba(248,113,113,0.2)', background: 'rgba(248,113,113,0.04)' }}>
           <SectionLabel>Powod pominiecia</SectionLabel>
           <input value={dayData.skipReason || ''} onChange={e => setDayData(p => ({ ...p, skipReason: e.target.value }))}

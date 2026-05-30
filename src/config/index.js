@@ -5,16 +5,16 @@ export const CONFIG = {
     { id: 'work8', label: 'Praca 8:00-16:00', short: '8-16',  color: '#60a5fa' },
     { id: 'work7', label: 'Praca 7:00-19:00', short: '7-19',  color: '#f59e0b' },
   ],
-  dayStatusThresholds: { win: 80, solid: 60, average: 35 },
+  dayStatusThresholds: { excellent: 70, good: 50, average: 30 },
   dayStatusLabels: {
-    win: 'Wygrałeś dzień', solid: 'Solidny dzień',
-    average: 'Średni dzień', chaotic: 'Chaotyczny dzień',
+    excellent: 'Wyśmienity dzień', good: 'Dobry dzień',
+    average: 'Średni dzień', weak: 'Słaby dzień',
   },
   dayCopyMap: {
-    win: 'Dzień zapisany. Lecimy dalej.',
-    solid: 'Dobra robota. Jutro jeszcze lepiej.',
-    average: 'Dzisiaj zabrakło struktury.',
-    chaotic: 'Jutro wracasz do minimum.',
+    excellent: 'Mocny wynik. To jest dzień z gatunku zapisać i powtórzyć.',
+    good: 'Dobra robota. Fundament jest dowieziony.',
+    average: 'Coś wpadło, coś uciekło. Dzień nadal zapisany.',
+    weak: 'Słabiej, ale seria żyje, jeśli wróciłeś do apki.',
   },
   tasks: [
     { id: 'water',   label: '2L wody',                    category: 'zdrowie', pts: 6,  emoji: '💧', isMinimum: true  },
