@@ -23,6 +23,7 @@ export default function CalendarView({ allDays, onSelectDay }) {
   const monthProgressKeys = monthKeys.filter(key => key <= today)
   const monthProgressScore = sumScores(allDays, monthProgressKeys)
   const monthProgressMax = monthProgressKeys.length * CONFIG.maxDailyScore
+  const monthFullMax = monthKeys.length * CONFIG.maxDailyScore
 
   return (
     <div style={{ paddingTop: 20, paddingBottom: 20 }}>
@@ -76,9 +77,12 @@ export default function CalendarView({ allDays, onSelectDay }) {
       <Card style={{ marginBottom: 10, padding: '14px 16px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
           <div>
-            <div style={{ fontSize: 10, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>Punkty miesiaca</div>
+            <div style={{ fontSize: 10, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>Punkty do dzisiaj</div>
             <div style={{ fontSize: 11, color: '#475569', marginTop: 3 }}>
-              Max laduje sie codziennie: {monthProgressKeys.length} x {CONFIG.maxDailyScore} pkt
+              Narastajaco: {monthProgressKeys.length} x {CONFIG.maxDailyScore} pkt
+            </div>
+            <div style={{ fontSize: 10, color: '#334155', marginTop: 2 }}>
+              Pelny miesiac: {monthKeys.length} dni = {monthFullMax} pkt
             </div>
           </div>
           <div style={{ fontSize: 24, fontWeight: 800, color: '#e2e8f0', whiteSpace: 'nowrap' }}>
